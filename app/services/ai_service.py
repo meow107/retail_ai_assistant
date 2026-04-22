@@ -50,38 +50,7 @@ MỤC TIÊU:
 - Không lan man
 """
 
-def ask_ai(question: str):
-    prompt = f"""
-Bạn là trợ lý chăm sóc khách hàng.
-
-Chỉ trả lời dựa trên thông tin sau:
-{FAQ_CONTENT}
-
-Nếu không có thông tin, nói:
-"Xin lỗi, vui lòng liên hệ shop"
-
-Câu hỏi: {question}
-"""
-
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={
-            "model": "llama3",
-            "prompt": SYSTEM_PROMPT + "\n" + prompt,
-            "stream": True,
-            "options": {
-                "temperature": 0.2,
-                "top_p": 0.9
-            }
-        }
-    )
-
-    data = response.json()
-    return data["response"]
-
-# open ai version
 # def ask_ai(question: str):
-
 #     prompt = f"""
 # Bạn là trợ lý chăm sóc khách hàng.
 
@@ -94,21 +63,52 @@ Câu hỏi: {question}
 # Câu hỏi: {question}
 # """
 
-#     response = client.chat.completions.create(
-#         model="gpt-4o-mini",
-#         messages=[
-#             {
-#                 "role": "system",
-#                 "content": SYSTEM_PROMPT
-#             },
-#             {
-#                 "role": "user",
-#                 "content": prompt
+#     response = requests.post(
+#         "http://localhost:11434/api/generate",
+#         json={
+#             "model": "llama3",
+#             "prompt": SYSTEM_PROMPT + "\n" + prompt,
+#             "stream": True,
+#             "options": {
+#                 "temperature": 0.2,
+#                 "top_p": 0.9
 #             }
-#         ],
-#         temperature=0.2
+#         }
 #     )
 
-#     return response.choices[0].message.content.strip()
+#     data = response.json()
+#     return data["response"]
+
+# open ai version
+def ask_ai(question: str):
+
+    prompt = f"""
+Bạn là trợ lý chăm sóc khách hàng.
+
+Chỉ trả lời dựa trên thông tin sau:
+{FAQ_CONTENT}
+
+Nếu không có thông tin, nói:
+"Xin lỗi, vui lòng liên hệ shop"
+
+Câu hỏi: {question}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.2
+    )
+
+    return response.choices[0].message.content.strip()
 
 
