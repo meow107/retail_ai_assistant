@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Retail AI Assistant</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -18,7 +16,6 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      padding: 10px;
     }
 
     .chat-container {
@@ -61,7 +58,6 @@
     .user {
       background: #d1e7ff;
       align-self: flex-end;
-      text-align: right;
     }
 
     .bot {
@@ -76,13 +72,16 @@
       gap: 5px;
     }
 
-    input {
+    textarea {
       flex: 1;
       padding: 12px;
       border: 1px solid #ccc;
       border-radius: 8px;
       outline: none;
+      resize: none;
+      font-family: inherit;
       font-size: 14px;
+      max-height: 120px;
     }
 
     button {
@@ -92,14 +91,10 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 14px;
     }
 
-    button:hover {
-      background: #333;
-    }
+    button:hover { background: #333; }
 
-    /* typing animation */
     .dots span {
       animation: blink 1s infinite;
     }
@@ -113,19 +108,10 @@
       100% { opacity: 0; }
     }
 
-    /* 📱 mobile */
     @media (max-width: 600px) {
       .chat-container {
         height: 100vh;
         border-radius: 0;
-      }
-
-      body {
-        padding: 0;
-      }
-
-      .msg {
-        font-size: 13px;
       }
     }
   </style>
@@ -135,60 +121,76 @@
 
 <div class="chat-container">
 
-  <div class="header">
-    🛍️ Retail AI Assistant
-  </div>
+  <div class="header">🛍️ Retail AI Assistant</div>
 
   <div class="messages" id="messages"></div>
 
   <div class="input-area">
-    <input id="input" placeholder="Nhập câu hỏi..." />
+    <textarea id="input" placeholder="Nhập câu hỏi..." rows="1"></textarea>
     <button onclick="sendMessage()">Gửi</button>
   </div>
 
 </div>
 
 <script>
-function addTypingIndicator() {
+/* 🌍 ENV SWITCH */
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://127.0.0.1:8000"
+    : "https://retail-ai-assistant-3f2i.onrender.com";
+
+console.log("Using API:", API_BASE_URL);
+
+/* 🧱 ADD MESSAGE SAFELY */
+function addMessage(text, type) {
   const messages = document.getElementById("messages");
 
-  const typing = document.createElement("div");
-  typing.className = "msg bot";
-  typing.id = "typing";
+  const div = document.createElement("div");
+  div.className = `msg ${type}`;
+  div.innerText = text;
 
-  typing.innerHTML = `
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+/* ⏳ TYPING */
+function addTyping() {
+  const messages = document.getElementById("messages");
+
+  const div = document.createElement("div");
+  div.className = "msg bot";
+  div.id = "typing";
+
+  div.innerHTML = `
     <div class="dots">
       AI đang trả lời
       <span>.</span><span>.</span><span>.</span>
     </div>
   `;
 
-  messages.appendChild(typing);
+  messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
 }
 
-function removeTypingIndicator() {
-  const typing = document.getElementById("typing");
-  if (typing) typing.remove();
+function removeTyping() {
+  const el = document.getElementById("typing");
+  if (el) el.remove();
 }
 
+/* 🚀 SEND */
 async function sendMessage() {
   const input = document.getElementById("input");
-  const messages = document.getElementById("messages");
-
   const text = input.value.trim();
+
   if (!text) return;
 
-  // user message
-  messages.innerHTML += `<div class="msg user">${text}</div>`;
+  addMessage(text, "user");
   input.value = "";
-  messages.scrollTop = messages.scrollHeight;
 
-  // typing
-  addTypingIndicator();
+  addTyping();
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/chat", {
+    const res = await fetch(`${API_BASE_URL}/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -198,16 +200,24 @@ async function sendMessage() {
 
     const data = await res.json();
 
-    removeTypingIndicator();
+    removeTyping();
 
-    messages.innerHTML += `<div class="msg bot">${data.answer}</div>`;
-    messages.scrollTop = messages.scrollHeight;
+    addMessage(data.answer || "⚠️ Không có phản hồi", "bot");
 
   } catch (err) {
-    removeTypingIndicator();
-    messages.innerHTML += `<div class="msg bot">❌ Server error</div>`;
+    console.error(err);
+    removeTyping();
+    addMessage("❌ Server error", "bot");
   }
 }
+
+/* ⌨️ ENTER / SHIFT+ENTER */
+document.getElementById("input").addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 </script>
 
 </body>
