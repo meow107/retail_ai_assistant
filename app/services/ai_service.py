@@ -33,26 +33,6 @@ FAQ:
 
 """
 
-# def ask_ai(question: str):
-
-#     response = client.chat.completions.create(
-
-#         model="gpt-4o-mini",
-
-#         messages=[
-
-#             {"role": "system", "content": SYSTEM_PROMPT},
-
-#             {"role": "user", "content": question}
-
-#         ],
-
-#         temperature=0
-
-#     )
-
-#     return response.choices[0].message.content.strip()
-
 
 SYSTEM_PROMPT = """
 Bạn là trợ lý chăm sóc khách hàng chuyên nghiệp cho một cửa hàng bán lẻ.
@@ -88,7 +68,7 @@ Câu hỏi: {question}
         json={
             "model": "llama3",
             "prompt": SYSTEM_PROMPT + "\n" + prompt,
-            "stream": False,
+            "stream": True,
             "options": {
                 "temperature": 0.2,
                 "top_p": 0.9
@@ -98,3 +78,37 @@ Câu hỏi: {question}
 
     data = response.json()
     return data["response"]
+
+# open ai version
+# def ask_ai(question: str):
+
+#     prompt = f"""
+# Bạn là trợ lý chăm sóc khách hàng.
+
+# Chỉ trả lời dựa trên thông tin sau:
+# {FAQ_CONTENT}
+
+# Nếu không có thông tin, nói:
+# "Xin lỗi, vui lòng liên hệ shop"
+
+# Câu hỏi: {question}
+# """
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": SYSTEM_PROMPT
+#             },
+#             {
+#                 "role": "user",
+#                 "content": prompt
+#             }
+#         ],
+#         temperature=0.2
+#     )
+
+#     return response.choices[0].message.content.strip()
+
+
