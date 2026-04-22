@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+import google.generativeai as genai
 import requests
 
 load_dotenv()
@@ -80,6 +81,45 @@ MỤC TIÊU:
 #     return data["response"]
 
 # open ai version
+# def ask_ai(question: str):
+
+#     prompt = f"""
+# Bạn là trợ lý chăm sóc khách hàng.
+
+# Chỉ trả lời dựa trên thông tin sau:
+# {FAQ_CONTENT}
+
+# Nếu không có thông tin, nói:
+# "Xin lỗi, vui lòng liên hệ shop"
+
+# Câu hỏi: {question}
+# """
+
+#     response = client.chat.completions.create(
+#         model="gpt-4o-mini",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": SYSTEM_PROMPT
+#             },
+#             {
+#                 "role": "user",
+#                 "content": prompt
+#             }
+#         ],
+#         temperature=0.2
+#     )
+
+#     return response.choices[0].message.content.strip()
+
+#gemini version
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+model = genai.GenerativeModel("models/gemini-flash-latest")
+
+for m in genai.list_models():
+    print(m.name)
+
 def ask_ai(question: str):
 
     prompt = f"""
@@ -94,21 +134,14 @@ Nếu không có thông tin, nói:
 Câu hỏi: {question}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.2
+    response = model.generate_content(
+        prompt,
+        generation_config={
+            "temperature": 0.2,
+            "top_p": 0.9
+        }
     )
 
-    return response.choices[0].message.content.strip()
+    return response.text.strip()
 
 
