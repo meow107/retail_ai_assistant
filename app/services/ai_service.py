@@ -5,7 +5,7 @@ import requests
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPEN_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def load_faq():
