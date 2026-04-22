@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+import requests
 
 load_dotenv()
 
@@ -32,22 +33,68 @@ FAQ:
 
 """
 
+# def ask_ai(question: str):
+
+#     response = client.chat.completions.create(
+
+#         model="gpt-4o-mini",
+
+#         messages=[
+
+#             {"role": "system", "content": SYSTEM_PROMPT},
+
+#             {"role": "user", "content": question}
+
+#         ],
+
+#         temperature=0
+
+#     )
+
+#     return response.choices[0].message.content.strip()
+
+
+SYSTEM_PROMPT = """
+Bạn là trợ lý chăm sóc khách hàng chuyên nghiệp cho một cửa hàng bán lẻ.
+
+QUY TẮC:
+- Chỉ trả lời dựa trên FAQ được cung cấp
+- Không suy đoán hoặc tự bịa thông tin
+- Nếu không có thông tin: nói "Xin lỗi, vui lòng liên hệ shop để được hỗ trợ thêm"
+- Trả lời ngắn gọn, rõ ràng (1–3 câu)
+- Luôn thân thiện, lịch sự
+- Trả lời bằng tiếng Việt
+
+MỤC TIÊU:
+- Giúp khách hàng hiểu thông tin nhanh nhất
+- Không lan man
+"""
+
 def ask_ai(question: str):
+    prompt = f"""
+Bạn là trợ lý chăm sóc khách hàng.
 
-    response = client.chat.completions.create(
+Chỉ trả lời dựa trên thông tin sau:
+{FAQ_CONTENT}
 
-        model="gpt-4o-mini",
+Nếu không có thông tin, nói:
+"Xin lỗi, vui lòng liên hệ shop"
 
-        messages=[
+Câu hỏi: {question}
+"""
 
-            {"role": "system", "content": SYSTEM_PROMPT},
-
-            {"role": "user", "content": question}
-
-        ],
-
-        temperature=0
-
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "llama3",
+            "prompt": SYSTEM_PROMPT + "\n" + prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.9
+            }
+        }
     )
 
-    return response.choices[0].message.content.strip()
+    data = response.json()
+    return data["response"]
